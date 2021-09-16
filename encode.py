@@ -1,13 +1,10 @@
 """
 ✘ Commands Available -
-• `{i}encode <reply to video>`
+• `{i}ffmpeg <reply to video>`
     optional `crf` and `stream`
-    Example : `{i}compress 27 stream` or `{i}compress 28`
+    Example : `{i}compress 30 stream` or `{i}compress 28`
     Encode the replied video according to CRF value.
-    Less CRF == High Quality, More Size
-    More CRF == Low Quality, Less Size
-    CRF Range = 0-51
-    Default = 30
+    
 """
 
 import asyncio
@@ -24,7 +21,7 @@ from telethon.tl.types import DocumentAttributeVideo
 from . import *
 
 
-@ultroid_cmd(pattern="encode ?(.*)")
+@ultroid_cmd(pattern="ffmpeg ?(.*)")
 async def _(e):
     cr = e.pattern_match.group(1)
     crf = 30
@@ -47,14 +44,14 @@ async def _(e):
                 name = ""
             if not name:
                 name = "video_" + dt.now().isoformat("_", "seconds") + ".mp4"
-            xxx = await eor(e, "`Trying To Download...`")
+            xxx = await eor(e, "📥Downloading📥")
             c_time = time.time()
             file = await downloader(
                 "resources/downloads/" + name,
                 vfile,
                 xxx,
                 c_time,
-                "I am Downloading " + name + "...",
+                "DOWNLOAD" + name + "...",
             )
             o_size = os.path.getsize(file.name)
             d_time = time.time()
@@ -86,7 +83,7 @@ async def _(e):
                     if len(frames):
                         elapse = int(frames[-1])
                     if len(size):
-                        text = f"`Compressing {file_name} at {crf} CRF.\n`"
+                        text = f"`Encoding {file_name} at {crf} CRF, Check stats by .ls\n`"
                         
                         
                         try:
@@ -99,19 +96,19 @@ async def _(e):
             f_time = time.time()
             difff = time_formatter((f_time - d_time) * 1000)
             await xxx.edit(
-                f"`Compressed {humanbytes(o_size)} to {humanbytes(c_size)} in {difff}\nTrying to Upload...`"
+                f"`Encoded {humanbytes(o_size)} to {humanbytes(c_size)} in {difff}\n📤Uploading📤"
             )
             differ = 100 - ((c_size / o_size) * 100)
             caption = f"**Original Size: **`{humanbytes(o_size)}`\n"
-            caption += f"**Compressed Size: **`{humanbytes(c_size)}`\n"
-            caption += f"**Compression Ratio: **`{differ:.2f}%`\n"
-            caption += f"\n**Time Taken To Compress: **`{difff}`"
+            caption += f"**Encoded Size: **`{humanbytes(c_size)}`\n"
+            caption += f"**Encoded Ratio: **`{differ:.2f}%`\n"
+            caption += f"\n**Time Taken To Encode: **`{difff}`"
             mmmm = await uploader(
                 out,
                 out,
                 f_time,
                 xxx,
-                "I am Uploading " + out + "...",
+                "UPLOAD" + out + "...",
             )
             if to_stream:
                 metadata = extractMetadata(createParser(out))
