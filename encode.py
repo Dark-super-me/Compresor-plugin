@@ -1,13 +1,13 @@
 """
 ✘ Commands Available -
-• `{i}compress <reply to video>`
+• `{i}encode <reply to video>`
     optional `crf` and `stream`
     Example : `{i}compress 27 stream` or `{i}compress 28`
     Encode the replied video according to CRF value.
     Less CRF == High Quality, More Size
     More CRF == Low Quality, Less Size
-    CRF Range = 20-51
-    Default = 27
+    CRF Range = 0-51
+    Default = 30
 """
 
 import asyncio
@@ -24,10 +24,10 @@ from telethon.tl.types import DocumentAttributeVideo
 from . import *
 
 
-@ultroid_cmd(pattern="compress ?(.*)")
+@ultroid_cmd(pattern="encode ?(.*)")
 async def _(e):
     cr = e.pattern_match.group(1)
-    crf = 27
+    crf = 30
     to_stream = False
     if cr:
         k = e.text.split()
@@ -54,7 +54,7 @@ async def _(e):
                 vfile,
                 xxx,
                 c_time,
-                "Downloading " + name + "...",
+                "I am Downloading " + name + "...",
             )
             o_size = os.path.getsize(file.name)
             d_time = time.time()
@@ -72,7 +72,7 @@ async def _(e):
             with open(progress, "w") as fk:
                 pass
             proce = await asyncio.create_subprocess_shell(
-                f'ffmpeg -hide_banner -loglevel quiet -progress {progress} -i """{file.name}""" -preset ultrafast -vcodec libx265 -map 0:a? -map 0:v? -map 0:s?  -c:a libopus -profile:a aac_he_v2 -ac 1 -b:a 64k -profile:v main10 -level 3.1 -bf 3 -coder 1 -pix_fmt yuv420p10 -s 856x480 -threads 3 -cpu-used 0 -r 23 -c:s copy   -metadata:s:a title="[Dark-Encodes] Opus-64k" -metadata:s:s title="[Dark-Encodes] SubStation" -metadata title="[Dark-Encodes]" -crf {crf} """{out}""" -y',
+                f'ffmpeg -hide_banner -loglevel quiet -progress {progress} -i """{file.name}""" -preset veryfast -c:v libx265 -s 856x480 -map 0:a? -map 0:v? -map 0:s?  -c:a libopus -b:a 40k -crf {crf} """{out}""" -y',
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE,
             )
@@ -86,32 +86,12 @@ async def _(e):
                     if len(frames):
                         elapse = int(frames[-1])
                     if len(size):
-                        size = int(size[-1])
-                        per = elapse * 100 / int(total_frames)
-                        time_diff = time.time() - int(d_time)
-                        speed = round(elapse / time_diff, 2)
-                        some_eta = ((int(total_frames) - elapse) / speed) * 1000
                         text = f"`Compressing {file_name} at {crf} CRF.\n`"
-                        progress_str = "`[{0}{1}] {2}%\n\n`".format(
-                            "".join(["●" for i in range(math.floor(per / 5))]),
-                            "".join(["" for i in range(20 - math.floor(per / 5))]),
-                            round(per, 2),
-                        )
-                        e_size = (
-                            humanbytes(size) + " of ~" + humanbytes((size / per) * 100)
-                        )
-                        eta = "~" + time_formatter(some_eta)
+                        
+                        
                         try:
-                            await xxx.edit(
-                                text
-                                + progress_str
-                                + "`"
-                                + e_size
-                                + "`"
-                                + "\n\n`"
-                                + eta
-                                + "`"
-                            )
+                            await xxx.edit(text)
+                                
                         except MessageNotModifiedError:
                             pass
             os.remove(file.name)
@@ -131,7 +111,7 @@ async def _(e):
                 out,
                 f_time,
                 xxx,
-                "Uploading " + out + "...",
+                "I am Uploading " + out + "...",
             )
             if to_stream:
                 metadata = extractMetadata(createParser(out))
